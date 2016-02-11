@@ -48,6 +48,7 @@ static void add_i2c_read_data(int i2c_address, struct i2c_msg *rd_msg, size_t nu
     rd_msg->addr = i2c_address;
     rd_msg->flags = I2C_M_RD;
     rd_msg->buf = malloc(number_of_data_to_read);
+    memset(rd_msg->buf, 0, number_of_data_to_read);
     rd_msg->len = number_of_data_to_read;
 }
 
@@ -143,10 +144,22 @@ int main(int argc, char** argv)
         return 3;
     }
 
+    if (i2c_address == -1) {
+        printf("Please set a device address\n");
+        usage();
+        return 4;
+    }
+
+    if (number_of_data_to_read == 0 && data_to_write == 0) {
+        printf("Please specify at least one transmission\n");
+        usage();
+        return 5;
+    }
+
     int i2c_character_device_fd = open_i2c_device(i2c_character_device);
     if (i2c_character_device_fd <= 0) {
         printf("Can not open %s", i2c_character_device);
-        return 4;
+        return 6;
     }
 
     struct i2c_msg rdwr_msg[2];
