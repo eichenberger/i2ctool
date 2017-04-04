@@ -95,6 +95,45 @@ static int open_i2c_device(const char *i2c_character_device)
     return fd;
 }
 
+static int i2c_detect(const char *i2c_character_device)
+{
+    int fd = open_i2c_device(i2c_character_device);
+    int i;
+    unsigned long timeout = 50; /* 50 * 10ms */
+    struct i2c_msg rdwr_msg;
+    char devices[512] = "";
+
+    if (fd < 0) {
+        printf("Can not open i2c device %s\n", i2c_character_device);
+        return 20;
+    }
+
+    memset (&rdwr_msg, 0, sizeof(rdwr_msg));
+    if (ioctl (fd, I2C_TIMEOUT, timeout) != 0) {
+        printf("Can not set timeout\n");
+        return 30;
+    }
+
+    printf("Check address:\n");
+    for (i = 1;i < 0x7F; i++) {
+        add_i2c_read_data(i, &rdwr_msg, 1);
+
+        struct i2c_rdwr_ioctl_data rdwr_set;
+
+        rdwr_set.msgs = &rdwr_msg;
+        rdwr_set.nmsgs = 1;
+        printf("\r0x%02X ", i);
+        fflush(stdout);
+        if (ioctl (fd, I2C_RDWR, &rdwr_set) >= 0) {
+            snprintf(devices, sizeof(devices), "%s 0x%02X ", devices, i);
+        }
+    }
+    printf("\n");
+    printf("Found devices at addresses:\n");
+    printf("%s\n", devices);
+    return 0;
+}
+
 static void usage(void)
 {
     printf ("\ni2ctool [OPTIONS...]\n\n"
@@ -103,6 +142,7 @@ static void usage(void)
             "  -a i2c device address, the address of the i2c device on the bus\n"
             "  -w data to write, comma seperated bytes 0,1,2,3,...\n"
             "  -r count of data to read, write will be executed before read\n"
+            "  -c detect devices on the bus\n"
             "  -h show this message\n\n");
 }
 
@@ -112,10 +152,11 @@ int main(int argc, char** argv)
     int number_of_data_to_read = 0;
     char *data_to_write = 0;
     char *i2c_character_device = 0;
+    int detect = 0;
     int c;
 
     opterr = 0;
-    while ((c = getopt (argc, argv, "a:d:w:r:h")) != -1) {
+    while ((c = getopt (argc, argv, "a:d:w:r:ch")) != -1) {
         switch (c)
         {
         case 'a':
@@ -130,6 +171,9 @@ int main(int argc, char** argv)
         case 'r':
             number_of_data_to_read = strtol(optarg, 0, 0);
 			break;
+        case 'c':
+            detect = 1;
+			break;
         case 'h':
             usage();
             return 1;
@@ -142,6 +186,10 @@ int main(int argc, char** argv)
 		printf("Please specify a device\n");
         usage();
         return 3;
+    }
+
+    if (detect) {
+        return i2c_detect(i2c_character_device);
     }
 
     if (i2c_address == -1) {
