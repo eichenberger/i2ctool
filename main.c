@@ -40,7 +40,7 @@ static void print_received_data(int i2c_address,const struct i2c_msg *rd_msg)
             break;
         }
     }
-	putchar('\n');
+    putchar('\n');
 }
 
 static void add_i2c_read_data(int i2c_address, struct i2c_msg *rd_msg, size_t number_of_data_to_read)
@@ -68,15 +68,15 @@ static int add_i2c_write_data(int i2c_address, struct i2c_msg *wr_msg, const cha
             wr_msg->buf = realloc(wr_msg->buf, (i/ALLOC_SIZE + 1) * ALLOC_SIZE * sizeof(char));
         }
 
-		if (wr_msg->buf == 0) {
-			printf("Run out of memory\n");
-			return -1;
-		}
+        if (wr_msg->buf == 0) {
+            printf("Run out of memory\n");
+            return -1;
+        }
 
         wr_msg->buf[i] = (unsigned char)strtol(parse_head, &parse_tail, 0); // Parses till end of string or no number if parse_tail is 0
 
         i++;
-		// if end of string reached, or next address is invalid
+        // if end of string reached, or next address is invalid
         if (parse_tail == 0 || *parse_tail == 0) {
             break;
         }
@@ -85,12 +85,12 @@ static int add_i2c_write_data(int i2c_address, struct i2c_msg *wr_msg, const cha
     }
 
     wr_msg->len = i;
-	return 0;
+    return 0;
 }
 
 static int open_i2c_device(const char *i2c_character_device)
 {
-	int fd = open(i2c_character_device, O_RDWR);
+    int fd = open(i2c_character_device, O_RDWR);
 
     return fd;
 }
@@ -170,20 +170,20 @@ int main(int argc, char** argv)
             break;
         case 'r':
             number_of_data_to_read = strtol(optarg, 0, 0);
-			break;
+            break;
         case 'c':
             detect = 1;
-			break;
+            break;
         case 'h':
             usage();
             return 1;
         default:
-			break;
+            break;
         }
     }
 
     if (i2c_character_device == 0) {
-		printf("Please specify a device\n");
+        printf("Please specify a device\n");
         usage();
         return 3;
     }
@@ -217,8 +217,8 @@ int main(int argc, char** argv)
 
     if (data_to_write != 0) {
         if (add_i2c_write_data(i2c_address, &rdwr_msg[msg_count], data_to_write) != 0) {
-			goto cleanup;
-		}
+            goto cleanup;
+        }
         msg_count ++;
     }
 
