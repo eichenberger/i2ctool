@@ -5,8 +5,14 @@ LDFLAGS ?=
 OBJ = main.o
 PROGNAME = i2ctool
 
+exec_prefix ?= "/usr"
+bindir ?= "$(exec_prefix)/bin"
+
 all: $(OBJ)
 	$(CC) $(CFLAGS) -o $(PROGNAME) $(OBJ) $(LDFLAGS)
+
+install: all
+	install -m 0755 $(PROGNAME) $(bindir)
 
 clean: $(OBJ)
 	@echo "Clean object files"
