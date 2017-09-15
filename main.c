@@ -102,6 +102,7 @@ static int i2c_detect(const char *i2c_character_device)
     unsigned long timeout = 50; /* 50 * 10ms */
     struct i2c_msg rdwr_msg;
     char devices[512] = "";
+    char tmp[128] = "";
 
     if (fd < 0) {
         printf("Can not open i2c device %s\n", i2c_character_device);
@@ -125,7 +126,9 @@ static int i2c_detect(const char *i2c_character_device)
         printf("\r0x%02X ", i);
         fflush(stdout);
         if (ioctl (fd, I2C_RDWR, &rdwr_set) >= 0) {
-            snprintf(devices, sizeof(devices), "%s 0x%02X ", devices, i);
+            /* create list of available devices */
+            snprintf(tmp, sizeof(tmp), "0x%02X ", i);
+            strncat(devices, tmp, sizeof(devices));
         }
     }
     printf("\n");
